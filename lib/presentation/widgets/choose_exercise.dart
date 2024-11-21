@@ -24,6 +24,29 @@ class _ChooseExerciseState extends State<ChooseExercise> {
     final progressString = questionState.getProgressString(title);
     final isLevelUnlocked =
         context.watch<QuestionState>().isLevelUnlocked(title);
+    final isLevelCompleted = questionState.completedLevels.contains(title);
+
+    IconData getIconForLevel(String title, bool isCompleted) {
+      if (isCompleted) {
+        return Icons.check_circle;
+      }
+      switch (title) {
+        case 'Adjectives':
+          return Icons.format_color_text;
+        case 'Adverbs':
+          return Icons.timeline;
+        case 'Conjunctions':
+          return Icons.link;
+        case 'Prefix & Suffix':
+          return Icons.text_fields;
+        case 'Sentence Structure':
+          return Icons.format_align_left;
+        case 'Verbs':
+          return Icons.play_arrow;
+        default:
+          return Icons.book;
+      }
+    }
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -34,8 +57,22 @@ class _ChooseExerciseState extends State<ChooseExercise> {
                 ? Colors.deepPurple.shade900
                 : Colors.deepPurple.shade900.withOpacity(0.5)),
         borderRadius: BorderRadius.circular(12),
+        border: isLevelCompleted
+            ? Border.all(color: Colors.green, width: 2)
+            : Border.all(color: Color(0xFF675a8a), width: 2),
       ),
       child: ListTile(
+        leading: Icon(
+          getIconForLevel(title, isLevelCompleted),
+          color: isLevelCompleted
+              ? Colors.green
+              : (!isLevelUnlocked
+                  ? Colors.white54
+                  : (selectedExercise == title
+                      ? Colors.white
+                      : Colors.white54)),
+          size: 24,
+        ),
         title: Row(
           children: [
             Expanded(
@@ -57,11 +94,13 @@ class _ChooseExerciseState extends State<ChooseExercise> {
               child: Text(
                 progressString,
                 style: TextStyle(
-                  color: !isLevelUnlocked
-                      ? Colors.white54
-                      : (selectedExercise == title
-                          ? Colors.white
-                          : Colors.white54),
+                  color: isLevelCompleted
+                      ? Colors.green
+                      : (!isLevelUnlocked
+                          ? Colors.white54
+                          : (selectedExercise == title
+                              ? Colors.white
+                              : Colors.white54)),
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),

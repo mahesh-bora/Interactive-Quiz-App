@@ -70,7 +70,6 @@ class _LevelMapState extends State<LevelMap>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      // Reset and restart animation when app comes to foreground
       restartAnimation();
     }
   }
@@ -107,11 +106,6 @@ class _LevelMapState extends State<LevelMap>
     ];
 
     return Scaffold(
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: restartAnimation,
-      //   child: Icon(Icons.refresh),
-      //   backgroundColor: Color(0xFF6165F0),
-      // ),
       backgroundColor: Colors.black,
       body: LayoutBuilder(
         builder: (context, constraints) {
@@ -168,14 +162,14 @@ class _LevelMapState extends State<LevelMap>
                       left: dynamicPositions[index].dx - 20 * scaleFactor,
                       top: dynamicPositions[index].dy - 20 * scaleFactor,
                       child: AnimatedOpacity(
-                        duration: Duration(milliseconds: 5000),
+                        duration: Duration(seconds: 5),
                         opacity: 1.0,
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             // Circle Avatar (scaled)
                             AnimatedContainer(
-                              duration: Duration(milliseconds: 5000),
+                              duration: Duration(milliseconds: 3000),
                               child: CircleAvatar(
                                 radius: 20 * scaleFactor,
                                 backgroundColor: isLevelCompleted

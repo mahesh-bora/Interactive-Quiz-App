@@ -26,6 +26,7 @@ class _QuizScreenState extends State<QuizScreen> {
   bool isLastQuestion = false;
   int totalQuestions = 0;
   String currentExercise = 'Exercise 1';
+  bool shouldUpdateBlobColor = false;
 
   int questionsSolved = 0;
   // int totalQuestionsSolved = 0; // Total solved questions across all exercises
@@ -114,22 +115,45 @@ class _QuizScreenState extends State<QuizScreen> {
     }
   }
 
-  void checkAnswer() {
+  // void checkAnswer() {
+  //   if (selectedAnswerIndex != null && !hasCheckedAnswer) {
+  //     bool isCorrect = options[selectedAnswerIndex!] == correctAnswer;
+  //     setState(() {
+  //       hasCheckedAnswer = true;
+  //     });
+  //
+  //     // Mark the specific question as solved
+  //     // context.read<QuestionState>().markQuestionSolved(
+  //     //     widget.category, currentExercise, currentQuestionIndex);
+  //     context.read<QuestionState>()
+  //       ..updateSolvedQuestions(widget.category, currentQuestionIndex)
+  //       ..updateQuizProgress(widget.category, isCorrect);
+  //     ;
+  //
+  //     showResultBottomSheet();
+  //   }
+  // }
+  void checkAnswer() async {
     if (selectedAnswerIndex != null && !hasCheckedAnswer) {
       bool isCorrect = options[selectedAnswerIndex!] == correctAnswer;
+
+      // First, trigger the blob color change
       setState(() {
         hasCheckedAnswer = true;
+        shouldUpdateBlobColor = true;
       });
 
-      // Mark the specific question as solved
-      // context.read<QuestionState>().markQuestionSolved(
-      //     widget.category, currentExercise, currentQuestionIndex);
+      // Update the quiz state
       context.read<QuestionState>()
         ..updateSolvedQuestions(widget.category, currentQuestionIndex)
         ..updateQuizProgress(widget.category, isCorrect);
-      ;
 
-      showResultBottomSheet();
+      // Wait for 3 seconds before showing the bottom sheet
+      await Future.delayed(const Duration(seconds: 2));
+
+      if (mounted) {
+        showResultBottomSheet();
+      }
     }
   }
 
@@ -287,6 +311,7 @@ class _QuizScreenState extends State<QuizScreen> {
                   ),
                 ),
                 const SizedBox(height: 32),
+
                 // Button
                 SizedBox(
                   width: double.infinity,
@@ -351,12 +376,12 @@ class _QuizScreenState extends State<QuizScreen> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.amber.withOpacity(0.1),
+                    color: Colors.blueAccent.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.emoji_events_rounded,
-                    color: Colors.amber,
+                    color: Colors.blueAccent,
                     size: 48,
                   ),
                 ),
@@ -394,7 +419,7 @@ class _QuizScreenState extends State<QuizScreen> {
                       Navigator.popUntil(context, (route) => route.isFirst);
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.amber,
+                      backgroundColor: Colors.blueAccent,
                       foregroundColor: Colors.black,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
@@ -419,141 +444,137 @@ class _QuizScreenState extends State<QuizScreen> {
     }
   }
 
-  // void showCompletionDialog() {
-  //   int totalSolved =
-  //       context.read<QuestionState>().getSolvedQuestionsCount(widget.category);
-  //
-  //   showDialog(
-  //     context: context,
-  //     builder: (context) => AlertDialog(
-  //       title: Text('Congratulations!'),
-  //       content: Text(
-  //         'You have completed all exercises.\n'
-  //         'You solved $totalSolved/$totalQuestionsAcrossExercises questions.',
-  //       ),
-  //       actions: [
-  //         TextButton(
-  //           onPressed: () {
-  //             context.read<QuestionState>().markLevelCompleted(widget.category);
-  //             Navigator.pop(context);
-  //           },
-  //           child: Text('OK'),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
-
   void showResultBottomSheet() {
     bool isCorrect = options[selectedAnswerIndex!] == correctAnswer;
 
     showModalBottomSheet(
-      context: context,
-      isDismissible: false,
-      enableDrag: false,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          color: isCorrect ? Color(0xFF1C4C3B) : Color(0xFF4A1919),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: isCorrect
-                          ? Color(0xFF4CAF50) // Green for correct
-                          : Color(0xFFD32F2F), // Red for incorrect
-                    ),
-                    child: Icon(
-                      isCorrect ? Icons.check : Icons.close,
-                      color: Colors.white,
-                      size: 20,
-                    ),
+        context: context,
+        isDismissible: false,
+        enableDrag: false,
+        backgroundColor: Colors.transparent,
+        builder: (context) => TweenAnimationBuilder<double>(
+              duration: const Duration(milliseconds: 500),
+              tween: Tween(begin: 1.0, end: 0.0),
+              builder: (context, value, child) {
+                return Transform.translate(
+                  offset: Offset(0, value * 200), // Slide up animation
+                  child: Opacity(
+                    opacity: 1 - value,
+                    child: child,
                   ),
-                  SizedBox(width: 12),
-                  Text(
-                    isCorrect ? 'Correct Answer' : 'Incorrect Answer',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                );
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: isCorrect ? Color(0xFF1C4C3B) : Color(0xFF4A1919),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: isCorrect
+                                  ? Color(0xFF4CAF50) // Green for correct
+                                  : Color(0xFFD32F2F), // Red for incorrect
+                            ),
+                            child: Icon(
+                              isCorrect ? Icons.check : Icons.close,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                          SizedBox(width: 12),
+                          Text(
+                            isCorrect ? 'Correct Answer' : 'Incorrect Answer',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 12),
+                      // Result feedback UI here
+                      SizedBox(height: 12),
+                      if (!isCorrect) ...[
+                        Text(
+                          'The correct answer is ${correctAnswer}',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                          ),
+                        ),
+                        SizedBox(height: 12),
+                        Text(
+                          '"${correctAnswer}" is the correct answer as per our data. Our data is based on verified information on the intenet and well-known institutions such as Oxford University.',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 14,
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
+                      if (isCorrect) ...[
+                        Text(
+                          'Great job! That\'s the right answer.',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 14,
+                            height: 1.4,
+                          ),
+                        ),
+                        SizedBox(height: 12),
+                        Text(
+                          'You are already rocking it, Keep hustling and upgrading your skills with your study buddy. Because learning should never stop',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 14,
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
+                      SizedBox(height: 24),
+                      Container(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            proceedToNext();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white.withOpacity(0.2),
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: Text(
+                            isLastQuestion && currentExercise == 'Exercise 1'
+                                ? 'Start Next Exercise'
+                                : 'Continue to next question',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-              SizedBox(height: 12),
-              // Result feedback UI here
-              SizedBox(height: 12),
-              if (!isCorrect) ...[
-                Text(
-                  'The correct answer is ${correctAnswer}',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                  ),
-                ),
-                SizedBox(height: 12),
-                Text(
-                  '"${correctAnswer}" is the correct answer as per our data. Our data is based on verified information on the intenet and well-known institutions such as Oxford University.',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                    height: 1.4,
-                  ),
-                ),
-              ],
-              if (isCorrect) ...[
-                Text(
-                  'Great job! That\'s the right answer.',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                    height: 1.4,
-                  ),
-                ),
-              ],
-              SizedBox(height: 24),
-              Container(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    proceedToNext();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white.withOpacity(0.1),
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: Text(
-                    isLastQuestion && currentExercise == 'Exercise 1'
-                        ? 'Start Next Exercise'
-                        : 'Continue to next question',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+            ));
   }
 
   Color getBlobColor() {
@@ -567,26 +588,6 @@ class _QuizScreenState extends State<QuizScreen> {
   Widget buildProgressBar() {
     return Column(
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Question $currentQuestionIndex of $totalQuestions',
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 14,
-              ),
-            ),
-            Text(
-              '${((currentQuestionIndex / totalQuestions) * 100).toInt()}%',
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 8),
         Container(
           height: 8,
           decoration: BoxDecoration(
@@ -618,6 +619,174 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 
   @override
+  Widget buildHeader() {
+    return Row(
+      children: [
+        IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            // Before popping, mark the category as in progress
+            context
+                .read<QuestionState>()
+                .markCategoryInProgress(widget.category);
+            Navigator.pop(context);
+          },
+        ),
+        Text(
+          'Grammar Practice',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: MediaQuery.of(context).size.width * 0.045,
+          ),
+        ),
+        Spacer(),
+        Icon(Icons.flag, color: Colors.white),
+      ],
+    );
+  }
+
+  Widget buildQuestionText() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          textAlign: TextAlign.left,
+          'Q$currentQuestionIndex. Fill in the blanks',
+          style: TextStyle(
+            color: Colors.white70,
+            fontSize: MediaQuery.of(context).size.width * 0.05,
+          ),
+        ),
+        SizedBox(
+          height: 10,
+        ),
+        Text(
+          '$questionText',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: MediaQuery.of(context).size.width * 0.04,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget buildOptions(Size size) {
+    return Column(
+      children: options.asMap().entries.map((entry) {
+        final index = entry.key;
+        final option = entry.value;
+        final isSelected = selectedAnswerIndex == index;
+        final isCorrect = hasCheckedAnswer && option == correctAnswer;
+        final isWrong = hasCheckedAnswer && isSelected && !isCorrect;
+
+        return SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: hasCheckedAnswer
+                ? null
+                : () {
+                    setState(() => selectedAnswerIndex = index);
+                  },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isCorrect
+                  ? Colors.green
+                  : isWrong
+                      ? Colors.red
+                      : isSelected
+                          ? Colors.blue
+                          : Colors.black.withOpacity(0.5),
+              padding: EdgeInsets.symmetric(
+                vertical: size.height * 0.02,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Row(
+              children: [
+                SizedBox(width: size.width * 0.05),
+                Container(
+                  height: 40,
+                  width: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Center(
+                    child: Text(
+                      ['A', 'B', 'C', 'D'][index],
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: size.width * 0.04,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: size.width * 0.03),
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: EdgeInsets.all(size.width * 0.02),
+                    child: Text(
+                      option,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: size.width * 0.04,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget buildCheckAnswerButton() {
+    String buttonText = 'Check Answer';
+
+    if (hasCheckedAnswer) {
+      if (options[selectedAnswerIndex!] == correctAnswer) {
+        buttonText = 'Great Work! 🎉';
+      } else {
+        buttonText = 'Oops! Wrong Answer';
+      }
+    }
+
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: selectedAnswerIndex != null && !hasCheckedAnswer
+            ? checkAnswer
+            : null,
+        style: ElevatedButton.styleFrom(
+          backgroundColor:
+              selectedAnswerIndex != null ? Colors.blue : Colors.grey[800],
+          padding: EdgeInsets.symmetric(
+            vertical: MediaQuery.of(context).size.height * 0.02,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+        child: Text(
+          buttonText,
+          style: TextStyle(
+            color:
+                selectedAnswerIndex != null ? Colors.white : Colors.grey[400],
+            fontSize: MediaQuery.of(context).size.width * 0.04,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget build(BuildContext context) {
     if (isLoading) {
       return QuizLoadingScreen();
@@ -635,39 +804,43 @@ class _QuizScreenState extends State<QuizScreen> {
         // ),
       );
     }
+    final size = MediaQuery.of(context).size;
     final blobColor = getBlobColor().withOpacity(0.3);
+    final padding = MediaQuery.of(context).padding;
+    final availableHeight = size.height - padding.top - padding.bottom;
 
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // Blob effects
           Positioned(
-            top: -50,
-            right: -50,
+            top: -30,
+            bottom: 10,
+            right: -20,
             child: AnimatedContainer(
               duration: Duration(milliseconds: 500),
-              width: 200,
-              height: 200,
+              width: 100,
+              height: 100,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
                     color: blobColor,
                     blurRadius: 100,
-                    spreadRadius: 50,
+                    spreadRadius: 70,
                   ),
                 ],
               ),
             ),
           ),
           Positioned(
-            bottom: -100,
-            left: -100,
+            top: 200,
+            // bottom: -100,
+            left: -10,
             child: AnimatedContainer(
               duration: Duration(milliseconds: 500),
-              width: 300,
-              height: 300,
+              width: 100,
+              height: 100,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 boxShadow: [
@@ -681,144 +854,64 @@ class _QuizScreenState extends State<QuizScreen> {
             ),
           ),
           SafeArea(
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Row(
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.arrow_back, color: Colors.white),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                      Text(
-                        'Grammar Practice',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                        ),
-                      ),
-                      Spacer(),
-                      Icon(Icons.flag, color: Colors.white),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: buildProgressBar(),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Q$currentQuestionIndex. $questionText',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                        ),
-                      ),
-                      SizedBox(height: 16),
-                    ],
-                  ),
-                ),
-                Container(
-                  width: 180,
-                  height: 180,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                  ),
-                  child: ClipOval(
-                    child: Image.asset(
-                      'assets/book_holder.png',
-                      fit: BoxFit.cover,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
                     ),
-                  ),
-                ),
-                SizedBox(height: 40),
-                ...options.asMap().entries.map(
-                  (entry) {
-                    final index = entry.key;
-                    final option = entry.value;
-                    final isSelected = selectedAnswerIndex == index;
-                    final isCorrect =
-                        hasCheckedAnswer && option == correctAnswer;
-                    final isWrong =
-                        hasCheckedAnswer && isSelected && !isCorrect;
+                    child: IntrinsicHeight(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: size.width * 0.04,
+                          vertical: size.height * 0.02,
+                        ),
+                        child: Column(
+                          children: [
+                            // Header
+                            buildHeader(),
+                            SizedBox(height: availableHeight * 0.02),
 
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0,
-                        vertical: 4.0,
-                      ),
-                      child: Container(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: hasCheckedAnswer
-                              ? null
-                              : () {
-                                  setState(() {
-                                    selectedAnswerIndex = index;
-                                  });
-                                },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: isCorrect
-                                ? Colors.green
-                                : isWrong
-                                    ? Colors.red
-                                    : isSelected
-                                        ? Colors.blue
-                                        : Colors.grey[900],
-                            padding: EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                            // Progress Bar
+                            buildProgressBar(),
+                            SizedBox(height: availableHeight * 0.03),
+
+                            // Question Text
+                            buildQuestionText(),
+                            SizedBox(height: availableHeight * 0.02),
+
+                            // Image
+                            Container(
+                              width: size.width * 0.4,
+                              height: size.width * 0.4,
+                              decoration: BoxDecoration(shape: BoxShape.circle),
+                              child: ClipOval(
+                                child: Image.asset(
+                                  'assets/book_holder.png',
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
                             ),
-                          ),
-                          child: Text(
-                            option,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
+                            SizedBox(height: availableHeight * 0.04),
+
+                            // Options
+                            buildOptions(size),
+
+                            // Check Answer Button
+                            Padding(
+                              padding: EdgeInsets.symmetric(
+                                vertical: availableHeight * 0.02,
+                              ),
+                              child: buildCheckAnswerButton(),
                             ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ).toList(),
-                SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Container(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed:
-                          selectedAnswerIndex != null && !hasCheckedAnswer
-                              ? checkAnswer
-                              : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: selectedAnswerIndex != null
-                            ? Colors.blue
-                            : Colors.grey[800],
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: Text(
-                        'Check Answer',
-                        style: TextStyle(
-                          color: selectedAnswerIndex != null
-                              ? Colors.white
-                              : Colors.grey[400],
-                          fontSize: 16,
+                          ],
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                );
+              },
             ),
           ),
         ],

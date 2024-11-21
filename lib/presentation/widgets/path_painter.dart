@@ -11,11 +11,14 @@ class LevelPathPainter extends CustomPainter {
   final List<Offset> positions;
   final int lastDrawnLevel;
 
+  final AnimationController? animationController;
+
   LevelPathPainter({
     required this.activeLevel,
     required this.progress,
     required this.positions,
     required this.lastDrawnLevel,
+    this.animationController,
   });
 
   @override
@@ -46,52 +49,56 @@ class LevelPathPainter extends CustomPainter {
       fullPath.cubicTo(current.dx, midY, next.dx, midY, next.dx, next.dy);
     }
 
+    // Hardcoded extension to final point when Verbs is unlocked
+    fullPath.cubicTo(
+        positions.last.dx, positions.last.dy + 100, 300, 900 - 100, 300, 900);
+
     canvas.drawPath(fullPath, inactivePaint);
 
-    // Draw green path for completed levels
-    final greenPath = Path();
-    greenPath.moveTo(positions[0].dx, positions[0].dy);
+    // Slow, gradual green path animation
+    final completedPath = Path();
+    completedPath.moveTo(positions[0].dx, positions[0].dy);
 
-    for (int i = 0; i < lastDrawnLevel + 1; i++) {
+    // Determine how many segments to fill based on progress and lastDrawnLevel
+    int segmentsToFill = (lastDrawnLevel + 1);
+
+    for (int i = 0; i < segmentsToFill - 1; i++) {
       final current = positions[i];
-      if (i < lastDrawnLevel) {
-        final next = positions[i + 1];
-        final midY = (current.dy + next.dy) / 2;
+      final next = positions[i + 1];
+      final midY = (current.dy + next.dy) / 2;
 
-        greenPath.cubicTo(current.dx, midY, next.dx, midY, next.dx, next.dy);
+      // For the last segment, use progress to partially fill
+      if (i == segmentsToFill - 2) {
+        final partialPath = Path();
+        partialPath.moveTo(current.dx, current.dy);
+        partialPath.cubicTo(current.dx, midY, next.dx, midY, next.dx, next.dy);
+
+        PathMetric pathMetric = partialPath.computeMetrics().first;
+        Path extractedPath =
+            pathMetric.extractPath(0.0, pathMetric.length * progress);
+
+        canvas.drawPath(completedPath, activePaint);
+        canvas.drawPath(extractedPath, activePaint);
+      } else {
+        completedPath.cubicTo(
+            current.dx, midY, next.dx, midY, next.dx, next.dy);
+        canvas.drawPath(completedPath, activePaint);
       }
     }
 
-    canvas.drawPath(greenPath, activePaint);
-
-    // Draw animated path for the current active segment
-    if (activeLevel > lastDrawnLevel) {
-      final activePath = Path();
-      activePath.moveTo(
-          positions[lastDrawnLevel].dx, positions[lastDrawnLevel].dy);
-
-      for (int i = lastDrawnLevel; i <= activeLevel; i++) {
-        final current = positions[i];
-        if (i < activeLevel) {
-          final next = positions[i + 1];
-          final midY = (current.dy + next.dy) / 2;
-
-          activePath.cubicTo(current.dx, midY, next.dx, midY, next.dx, next.dy);
-        }
-      }
-
-      // Animate only the active segment
-      PathMetrics pathMetrics = activePath.computeMetrics();
-      Path animatedPath = Path();
-
-      for (PathMetric metric in pathMetrics) {
-        double length = metric.length;
-        Path extractPath = metric.extractPath(0, length * progress);
-        animatedPath.addPath(extractPath, Offset.zero);
-      }
-
-      canvas.drawPath(animatedPath, activePaint);
+    // If Verbs level is unlocked, draw the full green extension
+    if (isVerbsUnlocked(activeLevel)) {
+      final verbsExtensionPath = Path();
+      verbsExtensionPath.moveTo(positions.last.dx, positions.last.dy);
+      verbsExtensionPath.cubicTo(
+          positions.last.dx, positions.last.dy + 100, 300, 900 - 100, 300, 900);
+      canvas.drawPath(verbsExtensionPath, activePaint);
     }
+  }
+
+  // Helper method to check if Verbs level is unlocked
+  bool isVerbsUnlocked(int activeLevel) {
+    return activeLevel == 6; // Assuming Verbs is the last level (index 5)
   }
 
   @override

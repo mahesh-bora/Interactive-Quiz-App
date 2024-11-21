@@ -206,6 +206,31 @@ class QuestionState extends ChangeNotifier {
     notifyListeners();
   }
 
+  void markCategoryInProgress(String category) {
+    // Ensure the category is added to started levels
+    _startedLevels.add(category);
+
+    // If the quiz state doesn't exist, create it
+    quizStates[category] ??= QuizState(
+      isLevelUnlocked: true,
+      currentExercise: 'Exercise 1',
+      currentQuestionIndex: 1,
+    );
+
+    // Ensure the level remains unlocked
+    if (quizStates[category]?.isLevelUnlocked != true) {
+      quizStates[category] = quizStates[category]!.copyWith(
+        isLevelUnlocked: true,
+      );
+    }
+
+    // Remove from completed levels if it was there
+    _completedLevels.remove(category);
+
+    // Notify listeners of the changes
+    notifyListeners();
+  }
+
   int getTotalAnsweredCount(String category) {
     return _totalAnswered[category] ?? 0;
   }
@@ -276,11 +301,11 @@ class QuestionState extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Optional: Method to reset progress
-  // void resetProgress() {
-  //   _startedLevels.clear();
-  //   _completedLevels.clear();
-  //   _startedLevels.add("Adjectives"); // Keep first level unlocked
-  //   notifyListeners();
-  // }
+// Optional: Method to reset progress
+// void resetProgress() {
+//   _startedLevels.clear();
+//   _completedLevels.clear();
+//   _startedLevels.add("Adjectives"); // Keep first level unlocked
+//   notifyListeners();
+// }
 }
