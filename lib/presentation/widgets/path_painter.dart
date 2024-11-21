@@ -37,7 +37,6 @@ class LevelPathPainter extends CustomPainter {
       ..strokeWidth = 5.0
       ..strokeCap = StrokeCap.round;
 
-    // Draw the full path in inactive color
     final fullPath = Path();
     fullPath.moveTo(positions[0].dx, positions[0].dy);
 
@@ -49,7 +48,6 @@ class LevelPathPainter extends CustomPainter {
       fullPath.cubicTo(current.dx, midY, next.dx, midY, next.dx, next.dy);
     }
 
-    // Hardcoded extension to final point when Verbs is unlocked
     fullPath.cubicTo(
         positions.last.dx, positions.last.dy + 100, 300, 900 - 100, 300, 900);
 
@@ -59,7 +57,6 @@ class LevelPathPainter extends CustomPainter {
     final completedPath = Path();
     completedPath.moveTo(positions[0].dx, positions[0].dy);
 
-    // Determine how many segments to fill based on progress and lastDrawnLevel
     int segmentsToFill = (lastDrawnLevel + 1);
 
     for (int i = 0; i < segmentsToFill - 1; i++) {
@@ -98,7 +95,7 @@ class LevelPathPainter extends CustomPainter {
 
   // Helper method to check if Verbs level is unlocked
   bool isVerbsUnlocked(int activeLevel) {
-    return activeLevel == 6; // Assuming Verbs is the last level (index 5)
+    return activeLevel == 5;
   }
 
   @override

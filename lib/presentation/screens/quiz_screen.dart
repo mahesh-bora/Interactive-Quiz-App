@@ -29,9 +29,7 @@ class _QuizScreenState extends State<QuizScreen> {
   bool shouldUpdateBlobColor = false;
 
   int questionsSolved = 0;
-  // int totalQuestionsSolved = 0; // Total solved questions across all exercises
-  int totalQuestionsAcrossExercises =
-      0; // Total number of questions across all exercises
+  int totalQuestionsAcrossExercises = 0;
 
   @override
   void initState() {
@@ -58,7 +56,7 @@ class _QuizScreenState extends State<QuizScreen> {
     if (context
         .read<QuestionState>()
         .hasAttemptedAllQuestions(widget.category)) {
-      showCompletionDialog(); // Show the message if already completed
+      showCompletionDialog();
     }
   }
 
@@ -115,29 +113,10 @@ class _QuizScreenState extends State<QuizScreen> {
     }
   }
 
-  // void checkAnswer() {
-  //   if (selectedAnswerIndex != null && !hasCheckedAnswer) {
-  //     bool isCorrect = options[selectedAnswerIndex!] == correctAnswer;
-  //     setState(() {
-  //       hasCheckedAnswer = true;
-  //     });
-  //
-  //     // Mark the specific question as solved
-  //     // context.read<QuestionState>().markQuestionSolved(
-  //     //     widget.category, currentExercise, currentQuestionIndex);
-  //     context.read<QuestionState>()
-  //       ..updateSolvedQuestions(widget.category, currentQuestionIndex)
-  //       ..updateQuizProgress(widget.category, isCorrect);
-  //     ;
-  //
-  //     showResultBottomSheet();
-  //   }
-  // }
   void checkAnswer() async {
     if (selectedAnswerIndex != null && !hasCheckedAnswer) {
       bool isCorrect = options[selectedAnswerIndex!] == correctAnswer;
 
-      // First, trigger the blob color change
       setState(() {
         hasCheckedAnswer = true;
         shouldUpdateBlobColor = true;
@@ -148,7 +127,6 @@ class _QuizScreenState extends State<QuizScreen> {
         ..updateSolvedQuestions(widget.category, currentQuestionIndex)
         ..updateQuizProgress(widget.category, isCorrect);
 
-      // Wait for 3 seconds before showing the bottom sheet
       await Future.delayed(const Duration(seconds: 2));
 
       if (mounted) {
@@ -172,7 +150,6 @@ class _QuizScreenState extends State<QuizScreen> {
 
     if (isLastQuestion) {
       if (currentExercise == 'Exercise 1') {
-        // Move to Exercise 2
         context.read<QuestionState>().saveQuizState(
               widget.category,
               QuizState(
@@ -219,7 +196,7 @@ class _QuizScreenState extends State<QuizScreen> {
           child: Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E1E1E), // Dark background
+              color: const Color(0xFF1E1E1E),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: Colors.grey[800]!,
@@ -355,7 +332,7 @@ class _QuizScreenState extends State<QuizScreen> {
           child: Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E1E1E), // Dark background
+              color: const Color(0xFF1E1E1E),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: Colors.grey[800]!,
@@ -796,12 +773,6 @@ class _QuizScreenState extends State<QuizScreen> {
     if (questionText == null) {
       return Scaffold(
         backgroundColor: Colors.black,
-        // body: Center(
-        //   child: Text(
-        //     'Loading or no question available',
-        //     style: TextStyle(color: Colors.white, fontSize: 20),
-        //   ),
-        // ),
       );
     }
     final size = MediaQuery.of(context).size;

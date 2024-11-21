@@ -32,7 +32,7 @@ class _QuizLoadingScreenState extends State<QuizLoadingScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1A2E), // Deep blue-black background
+      backgroundColor: const Color(0xFF1A1A2E),
       body: SafeArea(
         child: Center(
           child: Column(
@@ -56,7 +56,7 @@ class _QuizLoadingScreenState extends State<QuizLoadingScreen>
                     ],
                   ),
                   child: const Icon(
-                    Icons.psychology, // Brain icon
+                    Icons.psychology,
                     size: 60,
                     color: Color(0xFFE94560), // Accent color
                   ),
