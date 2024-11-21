@@ -60,13 +60,13 @@ Flutter pub get and run
   flutter run
 ```
 
-## Database Design
+## 📃Database Design
 ![image](https://github.com/user-attachments/assets/2bb0214d-4cab-4046-af1f-ecab84c5822b)
 
   ![image](https://github.com/user-attachments/assets/a0e9240c-a82d-45ae-ab5b-91e55f8335a5)
   ![image](https://github.com/user-attachments/assets/cfc02ddb-df1b-45ff-ac29-418c1ed5a966)
 
-## Assumptions made for smoother implementation
+## 💭Assumptions made for smoother implementation
 - Every Level has only two exercises
 - If an individual has attempted a quiz once, then they can't attempt it again
 - The green path is filled only after the level is unlocked and filled from current unlocked level to the latest unlocked level 
@@ -78,6 +78,7 @@ Flutter pub get and run
 - Fixed map type quiz set
 - Potential performance constraints with large datasets
 
+### Flutter Version - 3.24.3
 ## 🖊️Author
 
 - [Mahesh Bora](https://www.github.com/mahesh-bora) - (boraamahesh@gmail.com)
