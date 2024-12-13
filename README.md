@@ -1,4 +1,4 @@
-# Interactive Quiz App 🧠 - [Stimuler Assignment]
+# Interactive Quiz App 🧠 
 
 An interactive mobile application designed to help users explore and learn about different map types through engaging quizzes. Built with Flutter and following Clean Architecture principles, this app provides an educational and enjoyable learning experience.
 
